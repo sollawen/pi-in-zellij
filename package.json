@@ -1,0 +1,22 @@
+{
+  "name": "pi-in-zellij",
+  "version": "0.1.0",
+  "description": "Pi extension for zellij — multi-pane communication, delegate, editor",
+  "keywords": ["pi-package", "pi-extension", "zellij"],
+  "type": "module",
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*"
+  },
+  "files": [
+    "index.ts",
+    "config.ts",
+    "config.json",
+    "editor/",
+    "pane-comm/",
+    "lib/"
+  ],
+  "pi": {
+    "extensions": ["./index.ts"]
+  }
+}

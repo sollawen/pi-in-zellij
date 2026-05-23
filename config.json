@@ -1,0 +1,21 @@
+{
+  "names": {
+    "main": "Main",
+    "worker": "Lisa"
+  },
+  "workerPane": {
+    "floating": true,
+    "pinned": true,
+    "width": "25%",
+    "height": "60%"
+  },
+  "editorPane": {
+    "floating": true,
+    "pinned": true,
+    "width": "40%",
+    "height": "70%"
+  },
+  "startupWaitSeconds": 1,
+  "models": "minimax-cn/MiniMax-M2.7",
+  "mode": "work"
+}
