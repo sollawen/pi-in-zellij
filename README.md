@@ -1,8 +1,8 @@
-# pi-in-zellij — Pi, now in Zellij 🖥️✨
+# pi-in-zellij 
 
 ## Why?
 
-**Pi only supports tmux out of the box.** But let's be honest — Zellij is just *gorgeous*. Floating panes, smooth UX, modern feel. Tmux who?
+**Pi only supports tmux out of the box.** But let's be honest — Zellij is just *gorgeous*. Floating panes, smooth UX, modern feel. Who is Tmux?
 
 So I built this extension to bring Pi into Zellij, and things got a lot more interesting along the way.
 
@@ -10,28 +10,26 @@ So I built this extension to bring Pi into Zellij, and things got a lot more int
 
 ## What can it do?
 
-### 🖊️ `alt+e` — Floating editor pane
+### 🖊️  Floating editor pane
 
 Hit `alt+e` and a floating editor pane appears right in your terminal. Edit code or notes while keeping Pi's full context visible beside you. No more alt-tabbing to a separate editor. No more losing your train of thought.
 
 Close the pane when you're done — your edits come right back into Pi's input. It's just *nice*.
 
-### 🔄 `/delegate` & `/dd` — Two Pies are better than one
+### 🔄 Two Pies are better than one
 
 This is the real deal. Pi spawns *another Pi* in a floating pane, and they talk to each other over a tiny protocol.
 
-| Command | What it does |
-|---------|--------------|
-| `/delegate <task>` | Tell the main Pi "help me write a prompt for this task", then it sends the polished prompt to a Worker Pi |
-| `/dd [agentName] <task>` | **D**irect **D**elegate — skip the prompt-polishing, send the task straight to the Worker |
+- `/delegate <task>`:  Tell the main Pi "help me write a prompt for this task", then it sends the polished prompt to a Worker Pi 
+- `/dd [agentName] <task>`: **D**irect **D**elegate — skip the prompt-polishing, send the task straight to the Worker 
 
 **Why would you want this?**
 
-- 🧠 Your main Pi runs the expensive, smart model. It thinks, plans, and coordinates.
-- 💪 The Worker Pi runs a cheaper model. It does the grunt work — searching code, writing boilerplate, reviewing PRs, checking types.
-- 🚫 **No context pollution.** The Worker's conversation stays in its own pane. Your main Pi's context stays clean and focused. Fewer tokens burned on irrelevant chitchat.
-- 👁️ **Full visibility.** Every Worker output streams in front of you. See what it's doing. Interrupt it if it goes off the rails.
-- 🎯 **Agent-ready.** If you have custom agents (defined in `.pi/agents/`), you can assign them to the Worker: `/dd code-reviewer "review this PR"`
+- Your main Pi runs the expensive, smart model. It thinks, plans, and coordinates.
+- The Worker Pi runs a cheaper model. It does the grunt work — searching code, writing boilerplate, reviewing PRs, checking types.
+- **No context pollution.** The Worker's conversation stays in its own pane. Your main Pi's context stays clean and focused. Fewer tokens burned on irrelevant chitchat.
+- **Full visibility.** Every Worker output streams in front of you. See what it's doing. Interrupt it if it goes off the rails.
+- **Agent-ready.** If you have custom agents (defined in `.pi/agents/`), you can assign them to the Worker: `/dd code-reviewer "review this PR"`
 
 ### 💾 Geometry memory
 
@@ -113,5 +111,6 @@ Pi-in-zellij works by spawning Pi processes in floating Zellij panes. They commu
 
 *Made because Zellij deserves first-class Pi support. Feedback and contributions welcome!*
 
-Solla Wen
+Sollawen
+
 email: sollawen@163.com

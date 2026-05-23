@@ -2,6 +2,14 @@
   "name": "pi-in-zellij",
   "version": "0.1.0",
   "description": "Pi extension for zellij — multi-pane communication, delegate, editor",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sollawen/pi-in-zellij.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sollawen/pi-in-zellij/issues"
+  },
+  "homepage": "https://github.com/sollawen/pi-in-zellij#readme",
   "keywords": ["pi-package", "pi-extension", "zellij"],
   "type": "module",
   "peerDependencies": {
