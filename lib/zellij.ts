@@ -11,6 +11,14 @@ import { homedir } from 'node:os';
 
 const execAsync = promisify(exec);
 
+/** 对 shell 参数做单引号转义（防止空格等特殊字符被 shell 拆分） */
+function shellQuote(arg: string): string {
+  // 如果参数只含安全字符，不需要转义
+  if (/^[a-zA-Z0-9@%_+:,./-]+$/.test(arg)) return arg;
+  // 用单引号包裹，内部单引号用 '\'' 转义
+  return "'" + arg.replace(/'/g, "'\\''") + "'";
+}
+
 // ---- geometry 存储（合并为一个文件，支持多 key）----
 
 const geometryDir = join(homedir(), '.pi', 'tmp');
@@ -162,9 +170,11 @@ export async function createFloatingPane(opts: {
     if (opts.defaultHeight) args.push('--height', opts.defaultHeight);
   }
 
-  args.push('--', ...opts.cmd);
+  args.push('--');
 
-  const { stdout } = await execAsync(['zellij', ...args].join(' '));
+  const { stdout } = await execAsync(
+    ['zellij', ...args].map(shellQuote).concat(opts.cmd).join(' ')
+  );
   const paneId = stdout.trim();
 
   return paneId;

@@ -1,6 +1,6 @@
 {
   "name": "pi-in-zellij",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Pi extension for zellij — multi-pane communication, delegate, editor",
   "repository": {
     "type": "git",

@@ -20,8 +20,8 @@ Close the pane when you're done — your edits come right back into Pi's input. 
 
 This is the real deal. Pi spawns *another Pi* in a floating pane, and they talk to each other over a tiny protocol.
 
-- `/delegate <task>`:  Tell the main Pi "help me write a prompt for this task", then it sends the polished prompt to a Worker Pi 
-- `/dd [agentName] <task>`: **D**irect **D**elegate — skip the prompt-polishing, send the task straight to the Worker 
+- `/dd [agentName] <task>`: **D**irect **D**elegate — skip the prompt-polishing, send the task straight to the Worker
+- `/dc [agentName] <task>`: **D**elegate with **C**ontext — same as `/dd` but the Worker inherits your full conversation context 
 
 **Why would you want this?**
 
@@ -30,6 +30,8 @@ This is the real deal. Pi spawns *another Pi* in a floating pane, and they talk 
 - **No context pollution.** The Worker's conversation stays in its own pane. Your main Pi's context stays clean and focused. Fewer tokens burned on irrelevant chitchat.
 - **Full visibility.** Every Worker output streams in front of you. See what it's doing. Interrupt it if it goes off the rails.
 - **Agent-ready.** If you have custom agents (defined in `.pi/agents/`), you can assign them to the Worker: `/dd code-reviewer "review this PR"`
+
+> `/dc` is same as `/dd` but the Worker inherits your full conversation context via `pi --fork`. Use it when the discussion content matters for the Worker's task. For most tasks, `/dd` (no context) is the better default — faster and cheaper.
 
 ### 💾 Geometry memory
 
@@ -88,7 +90,7 @@ Want to customize? Create `.pi/pi-in-zellij/config.json` in your project root. A
 
 | Command | Action |
 |---------|--------|
-| `/delegate <task>` | Ask Pi to craft a prompt, then send it to a Worker |
+| `/dc [agentName] <task>` | Send a task to a Worker with full conversation context (**D**elegate with **C**ontext) |
 | `/dd [agentName] <task>` | Send a task directly to a Worker, no middleman |
 
 Pro tip: Combine `/dd` with custom agents. List your available agents with `pi list --agents` or just type `/dd` and hit tab to see autocomplete.

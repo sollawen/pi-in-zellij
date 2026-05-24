@@ -1,11 +1,11 @@
 /**
  * pi-in-zellij — Pi 在 zellij 环境下的统一扩展包
- * 支持多 pane 通信（/delegate, /dd）和外部编辑器（alt+e）
+ * 支持多 pane 通信（/dc, /dd）和外部编辑器（alt+e）
  */
 
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import { registerEditorShortcut } from './editor/editor';
-import { registerDelegateCommand } from './pane-comm/delegates';
+import { registerDcCommand } from './pane-comm/dc';
 import { registerDdCommand } from './pane-comm/dd';
 import { registerInterceptor } from './pane-comm/interceptor';
 
@@ -14,7 +14,7 @@ export default function (pi: ExtensionAPI) {
   if (!process.env.ZELLIJ) return;
 
   registerEditorShortcut(pi);
-  registerDelegateCommand(pi);
+  registerDcCommand(pi);
   registerDdCommand(pi);
   registerInterceptor(pi);
 }

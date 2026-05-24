@@ -8,7 +8,6 @@ import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import { getMyPaneId, writeToPane, closeFloatingPane } from '../lib/zellij';
 import { PiMessage, isProtocolMessage, parseMessage, buildMessage } from './msg-protocol';
 import { readAgent } from '../lib/agents';
-import { sendDelegate, CompleteDelegateMsg, pendingWorker } from './delegates';
 
 // 当前任务元数据（Worker 收到委托时设置，回复后清除）
 let currTask: (Omit<PiMessage, 'markdown'> & { receivedAt: number }) | null = null;
@@ -100,30 +99,7 @@ export function registerInterceptor(pi: ExtensionAPI) {
 
   // ---- agent_end hook：LLM 完成后自动回复 + 关闭 ----
   pi.on('agent_end', async (_event, _ctx) => {
-    // 优先检查 pendingWorker：Main 侧 LLM 生成了 prompt，发送给 Worker
-    if (pendingWorker.data) {
-      const pw = pendingWorker.data;
-      pendingWorker.clear();
-
-      try {
-        const replyText = getLatestAssistantText(_ctx);
-
-        if (replyText) {
-          const completeMsg: CompleteDelegateMsg = {
-            ...pw,
-            needReply: true,
-            commType: 'Delegate',
-            markdown: replyText,
-          };
-          await sendDelegate(_ctx, completeMsg);
-        }
-      } catch (err) {
-        console.log('[pi-in-zellij] 发送给 Worker 失败:', err);
-      }
-      return;
-    }
-
-    // 否则是 Worker 侧：回复给 Main 并关闭
+    // Worker 侧：回复给 Main 并关闭
     if (!currTask) return;
 
     // 立刻快照 + 清除，防止重复触发
