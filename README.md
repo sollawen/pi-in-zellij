@@ -1,4 +1,5 @@
-# pi-in-zellij 
+# pi-in-zellij
+
 
 ## Why?
 
@@ -6,15 +7,18 @@
 
 So I built this extension to bring Pi into Zellij, and things got a lot more interesting along the way.
 
----
+![screenshot](./pi-in-zellij.jpg)
+
 
 ## What can it do?
 
 ### 🖊️  Floating editor pane
 
-Hit `alt+e` and a floating editor pane appears right in your terminal. Edit code or notes while keeping Pi's full context visible beside you. No more alt-tabbing to a separate editor. No more losing your train of thought.
+Hit `alt+e` and a floating editor pane appears right in your terminal. Edit code or notes while keeping Pi's full context visible beside you. No more alt-tabbing to a separate editor. And, *you can move and resize this floating pane anywhere*. No more losing your train of thought.
 
 Close the pane when you're done — your edits come right back into Pi's input. It's just *nice*.
+
+---
 
 ### 🔄 Two Pies are better than one
 
@@ -23,13 +27,22 @@ This is the real deal. Pi spawns *another Pi* in a floating pane, and they talk 
 - `/dd [agentName] <task>`: **D**irect **D**elegate — skip the prompt-polishing, send the task straight to the Worker
 - `/dc [agentName] <task>`: **D**elegate with **C**ontext — same as `/dd` but the Worker inherits your full conversation context 
 
-**Why would you want this?**
 
-- Your main Pi runs the expensive, smart model. It thinks, plans, and coordinates.
-- The Worker Pi runs a cheaper model. It does the grunt work — searching code, writing boilerplate, reviewing PRs, checking types.
-- **No context pollution.** The Worker's conversation stays in its own pane. Your main Pi's context stays clean and focused. Fewer tokens burned on irrelevant chitchat.
-- **Full visibility.** Every Worker output streams in front of you. See what it's doing. Interrupt it if it goes off the rails.
-- **Agent-ready.** If you have custom agents (defined in `.pi/agents/`), you can assign them to the Worker: `/dd code-reviewer "review this PR"`
+**Main-Pi thinks, Worker-Pi do.**
+
+- **Main-Pi** runs the expensive, smart model — it thinks, plans, and coordinates
+- **Worker-Pi** run cheaper models — searching code, writing boilerplate, reviewing PRs, checking types
+- **No context pollution** — Worker-Pi runs in his own pane, main-Pi stays clean
+- **Full visibility** — every Pi output streams in front of you. Interrupt if needed.
+
+
+**Agents ready.** 
+
+If you have custom agents (defined in `.pi/agents/`), you can assign them to the Worker: `/dd code-reviewer "review this PR"`
+
+For more on agents and delegation, see [PI-AGENTS.md](./docs/PI-AGENTS.md).
+
+---
 
 > `/dc` is same as `/dd` but the Worker inherits your full conversation context via `pi --fork`. Use it when the discussion content matters for the Worker's task. For most tasks, `/dd` (no context) is the better default — faster and cheaper.
 
@@ -47,7 +60,6 @@ pi install npm:pi-in-zellij
 
 That's it. Restart Pi and you're ready.
 
----
 
 ## Configuration
 
@@ -62,41 +74,6 @@ Want to customize? Create `.pi/pi-in-zellij/config.json` in your project root. A
 }
 ```
 
-### All config options
-
-| Field | Default | What it does |
-|-------|---------|--------------|
-| `names.main` | `"Main"` | Name tag for the orchestrating Pi |
-| `names.worker` | `"Lisa"` | Name tag for the Worker Pi |
-| `workerPane.width` | `"25%"` | Width of the floating Worker pane |
-| `workerPane.height` | `"60%"` | Height of the floating Worker pane |
-| `editorPane.width` | `"40%"` | Width of the floating editor pane |
-| `editorPane.height` | `"70%"` | Height of the floating editor pane |
-| `startupWaitSeconds` | `1` | Seconds to wait for Pi to boot in the Worker pane (tune for slow machines) |
-| `models` | `"minimax-cn/MiniMax-M2.7"` | Model for the Worker. Set to `"auto"` to use Pi's default |
-| `mode` | `"work"` | Agent mode for the Worker (`"plan"` or `"work"`) |
-
----
-
-## Keyboard shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| `alt+e` | Open floating editor pane |
-
----
-
-## Commands
-
-| Command | Action |
-|---------|--------|
-| `/dc [agentName] <task>` | Send a task to a Worker with full conversation context (**D**elegate with **C**ontext) |
-| `/dd [agentName] <task>` | Send a task directly to a Worker, no middleman |
-
-Pro tip: Combine `/dd` with custom agents. List your available agents with `pi list --agents` or just type `/dd` and hit tab to see autocomplete.
-
----
-
 ## Requirements
 
 - [Zellij](https://zellij.dev) — you're using it, right?
@@ -105,14 +82,6 @@ Pro tip: Combine `/dd` with custom agents. List your available agents with `pi l
 
 ---
 
-## Under the hood (for the curious)
-
-Pi-in-zellij works by spawning Pi processes in floating Zellij panes. They communicate through a lightweight XML protocol sent as keystrokes — no sockets, no files, no daemons. Just two Pi instances chatting through the terminal.
-
----
-
-*Made because Zellij deserves first-class Pi support. Feedback and contributions welcome!*
-
-Sollawen
+### Sollawen
 
 email: sollawen@163.com

@@ -1,7 +1,7 @@
 {
   "name": "pi-in-zellij",
   "version": "0.2.0",
-  "description": "Pi extension for zellij — multi-pane communication, delegate, editor",
+  "description": "Floating terminal Editor, multi-Pi agents working together, play within zellij",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sollawen/pi-in-zellij.git"
@@ -20,6 +20,7 @@
     "index.ts",
     "config.ts",
     "config.json",
+    "docs/",
     "editor/",
     "pane-comm/",
     "lib/"
