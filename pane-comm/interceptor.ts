@@ -8,6 +8,9 @@ import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import { getMyPaneId, writeToPane, closeFloatingPane } from '../lib/zellij';
 import { PiMessage, isProtocolMessage, parseMessage, buildMessage } from './msg-protocol';
 import { readAgent } from '../lib/agents';
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { homedir } from 'node:os';
 
 // 当前任务元数据（Worker 收到委托时设置，回复后清除）
 let currTask: (Omit<PiMessage, 'markdown'> & { receivedAt: number }) | null = null;
@@ -40,6 +43,19 @@ function getLatestAssistantText(ctx: any): string {
 }
 
 export function registerInterceptor(pi: ExtensionAPI) {
+
+  // ---- session_start：pi 完全就绪后写入就绪文件 ----
+  pi.on('session_start', () => {
+    try {
+      const piTmpDir = join(homedir(), '.pi', 'tmp');
+      mkdirSync(piTmpDir, { recursive: true });
+      const readinessFile = join(piTmpDir, `pi-in-zellij-ready-${getMyPaneId()}`);
+      writeFileSync(readinessFile, 'ready', 'utf8');
+      console.log(`[pi-in-zellij] readiness file written: ${readinessFile}`);
+    } catch (err) {
+      console.log('[pi-in-zellij] failed to write readiness file:', err);
+    }
+  });
 
   // ---- input hook：截获来自其他 pi 的协议消息 ----
   pi.on('input', async (event, ctx) => {

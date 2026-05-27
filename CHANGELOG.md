@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.2
+- Fixed: /dd command on Linux — prompt no longer requires manual Enter
+  - Root cause: fixed sleep (1s) was too short for slower Linux startup
+  - Solution: readiness file polling via `session_start` event, adaptive wait with 5s timeout
+- Changed: `startupWaitSeconds` → `maxWaitSeconds` in config (default: 5)
+- Added: CHANGELOG.md included in npm package
+
 ## 0.2.1
 - Added: recursive scanning of nested directories for agent files
 

@@ -28,7 +28,7 @@ export interface PaneCommConfig {
   names: { main: string; worker: string };
   workerPane: WorkerPaneConfig;
   editorPane: EditorPaneConfig;
-  startupWaitSeconds: number;
+  maxWaitSeconds: number;
   models: string;
   mode: string;
 }

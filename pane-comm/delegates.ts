@@ -8,6 +8,9 @@ import { loadConfig } from '../config';
 import { getMyPaneId, createFloatingPane, wait, writeToPane } from '../lib/zellij';
 import { agentList, parseAgentInput } from '../lib/agents';
 import { generateCommId, buildMessage } from './msg-protocol';
+import { existsSync, unlinkSync } from 'node:fs';
+import { join } from 'node:path';
+import { homedir } from 'node:os';
 
 // ---- 公用类型 ----
 
@@ -81,8 +84,27 @@ export async function sendDelegate(
   const finalMsg = { ...msg, secondPaneId: workerPaneId };
   ctx.ui.notify(`✓ Worker 已创建: pane ${workerPaneId}`, 'info');
 
-  // 等待 worker 的 pi 启动就绪
-  await wait(config.startupWaitSeconds * 1000);
+  // 轮询等待 Worker 就绪（替代固定 sleep）
+  const readinessFile = join(homedir(), '.pi', 'tmp', `pi-in-zellij-ready-${workerPaneId}`);
+
+  // ① 清理可能残留的旧文件（上次崩溃遗留）
+  try { unlinkSync(readinessFile); } catch {}
+
+  // ② 轮询等待 Worker 就绪
+  const maxWait = (config.maxWaitSeconds || 5) * 1000;
+  const pollInterval = 200;
+  let elapsed = 0;
+  while (!existsSync(readinessFile) && elapsed < maxWait) {
+    await wait(pollInterval);
+    elapsed += pollInterval;
+  }
+  if (!existsSync(readinessFile)) {
+    ctx.ui.notify('⚠️ Worker startup timeout, attempting to send...', 'warning');
+  } else {
+    // ③ 检测到就绪，立即删除文件（防止残留）
+    try { unlinkSync(readinessFile); } catch {}
+  }
+  console.log(`[pi-in-zellij] Worker readiness wait: ${elapsed}ms`);
 
   // 构建协议消息并发送
   const message = buildMessage(

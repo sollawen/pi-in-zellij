@@ -15,7 +15,7 @@
     "width": "40%",
     "height": "70%"
   },
-  "startupWaitSeconds": 1,
+  "maxWaitSeconds": 5,
   "models": "minimax-cn/MiniMax-M2.7",
   "mode": "work"
 }

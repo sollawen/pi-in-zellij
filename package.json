@@ -26,6 +26,7 @@
     "config.json",
     "docs/",
     "editor/",
+    "CHANGELOG.md",
     "pane-comm/",
     "lib/"
   ],
