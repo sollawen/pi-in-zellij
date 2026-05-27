@@ -104,8 +104,6 @@ export async function sendDelegate(
     // ③ 检测到就绪，立即删除文件（防止残留）
     try { unlinkSync(readinessFile); } catch {}
   }
-  console.log(`[pi-in-zellij] Worker readiness wait: ${elapsed}ms`);
-
   // 构建协议消息并发送
   const message = buildMessage(
     finalMsg.firstPaneId,

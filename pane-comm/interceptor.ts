@@ -51,9 +51,8 @@ export function registerInterceptor(pi: ExtensionAPI) {
       mkdirSync(piTmpDir, { recursive: true });
       const readinessFile = join(piTmpDir, `pi-in-zellij-ready-${getMyPaneId()}`);
       writeFileSync(readinessFile, 'ready', 'utf8');
-      console.log(`[pi-in-zellij] readiness file written: ${readinessFile}`);
     } catch (err) {
-      console.log('[pi-in-zellij] failed to write readiness file:', err);
+      console.error('[pi-in-zellij] failed to write readiness file:', err);
     }
   });
 

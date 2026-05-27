@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.3
+- Fixed: removed debug `console.log` that polluted main pi TUI input
+- Changed: error logging in worker readiness handler uses `console.error` instead of `console.log`
+
 ## 0.2.2
 - Fixed: /dd command on Linux — prompt no longer requires manual Enter
   - Root cause: fixed sleep (1s) was too short for slower Linux startup
