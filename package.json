@@ -1,6 +1,6 @@
 {
   "name": "pi-in-zellij",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Floating terminal Editor, multi-Pi agents working together, play within zellij",
   "repository": {
     "type": "git",
@@ -10,7 +10,11 @@
     "url": "https://github.com/sollawen/pi-in-zellij/issues"
   },
   "homepage": "https://github.com/sollawen/pi-in-zellij#readme",
-  "keywords": ["pi-package", "pi-extension", "zellij"],
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "zellij"
+  ],
   "type": "module",
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",
@@ -26,6 +30,8 @@
     "lib/"
   ],
   "pi": {
-    "extensions": ["./index.ts"]
+    "extensions": [
+      "./index.ts"
+    ]
   }
 }
