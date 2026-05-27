@@ -25,7 +25,8 @@ Close the pane when you're done — your edits come right back into Pi's input. 
 This is the real deal. Pi spawns *another Pi* in a floating pane, and they talk to each other over a tiny protocol.
 
 - `/dd [agentName] <task>`: **D**irect **D**elegate — skip the prompt-polishing, send the task straight to the Worker
-- `/dc [agentName] <task>`: **D**elegate with **C**ontext — same as `/dd` but the Worker inherits your full conversation context 
+- `/dc [agentName] <task>`: **D**elegate with **C**ontext — same as `/dd` but the Worker inherits your full conversation context
+- `[agentName]` is **ONLY optional**; omit it to delegate your order directly to the new Pi 
 
 
 **Main-Pi thinks, Worker-Pi do.**
