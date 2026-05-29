@@ -8,6 +8,8 @@ import { registerEditorShortcut } from './editor/editor';
 import { registerDcCommand } from './pane-comm/dc';
 import { registerDdCommand } from './pane-comm/dd';
 import { registerInterceptor } from './pane-comm/interceptor';
+import { registerSummonTool } from './pane-comm/summon';
+import { loadConfig } from './config';
 
 export default function (pi: ExtensionAPI) {
   // 不在 zellij 中时，跳过所有 zellij 相关功能
@@ -17,4 +19,10 @@ export default function (pi: ExtensionAPI) {
   registerDcCommand(pi);
   registerDdCommand(pi);
   registerInterceptor(pi);
+
+  // 有 assistants 配置时才注册 summon tool
+  const config = loadConfig();
+  if (config.assistants?.length) {
+    registerSummonTool(pi);
+  }
 }

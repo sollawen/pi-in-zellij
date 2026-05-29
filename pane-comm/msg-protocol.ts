@@ -12,6 +12,7 @@ export interface PiMessage {
   commId: string;
   commType: string;
   agent?: string;
+  assistant?: string;  // 新增：summon 专用
   firstPid?: number;
   markdown: string;
 }
@@ -34,6 +35,7 @@ export function parseMessage(input: string): PiMessage | null {
   const commType = extractField(input, 'commType');
   const agent = extractField(input, 'agent');
   const firstPidRaw = extractField(input, 'firstPid');
+  const assistant = extractField(input, 'assistant');
   const markdown = extractMarkdown(input);
 
   if (!firstPaneId || !secondPaneId || !firstName) return null;
@@ -47,6 +49,7 @@ export function parseMessage(input: string): PiMessage | null {
     commId: commId || '',
     commType: commType || 'Delegate',
     agent: agent || undefined,
+    assistant: assistant || undefined,
     firstPid: firstPidRaw ? parseInt(firstPidRaw, 10) : undefined,
     markdown,
   };
@@ -63,7 +66,8 @@ export function buildMessage(
   commType: string,
   markdown: string,
   agent: string | undefined = undefined,
-  firstPid: number | undefined = undefined
+  firstPid: number | undefined = undefined,
+  assistant: string | undefined = undefined,  // 新增
 ): string {
   const agentLine = agent !== undefined
     ? `    <agent: ${agent}>`
@@ -71,6 +75,9 @@ export function buildMessage(
   const firstPidLine = firstPid !== undefined
     ? `    <firstPid: ${firstPid}>`
     : `    <firstPid: >`;
+  const assistantLine = assistant !== undefined
+    ? `    <assistant: ${assistant}>`
+    : `    <assistant: >`;
 
   return [
     '<pi-communication>',
@@ -83,6 +90,7 @@ export function buildMessage(
     `    <commType: ${commType}>`,
     agentLine,
     firstPidLine,
+    assistantLine,
     '    <markdown>',
     `        ${markdown}`,
     '    </markdown>',

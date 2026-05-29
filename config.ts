@@ -24,6 +24,11 @@ export interface WorkerPaneConfig {
   height: string;
 }
 
+export interface AssistantConfig {
+  alias: string;
+  model: string;
+}
+
 export interface PaneCommConfig {
   names: { main: string; worker: string };
   workerPane: WorkerPaneConfig;
@@ -31,6 +36,7 @@ export interface PaneCommConfig {
   maxWaitSeconds: number;
   models: string;
   mode: string;
+  assistants?: AssistantConfig[];  // 新增
 }
 
 // 缓存，只读一次

@@ -1,6 +1,6 @@
 # Summon Tool 实施计划
 
-基于 `summon评估.md` 的分析结论，本计划将实施拆解为 6 个步骤，按依赖顺序排列。每步完成后可独立验证，无前后耦合的步骤可并行。
+基于 `summon评估.md` 的分析结论，本计划将实施拆解为 5 个步骤，按依赖顺序排列。每步完成后可独立验证，无前后耦合的步骤可并行。
 
 ---
 
@@ -10,13 +10,14 @@
 |------|------|--------|------|
 | `config.ts` | 修改 | ~10 行 | 新增 `AssistantConfig` 接口 |
 | `pane-comm/msg-protocol.ts` | 修改 | ~20 行 | `PiMessage` 加 `assistant` 字段、`buildMessage`/`parseMessage` 支持 `<assistant>` 标签 |
-| `pane-comm/delegates.ts` | 修改 | ~30 行 | 抽取 `spawnWorker()` 公共函数，`sendDelegate` 改为调用它 |
-| `pane-comm/summon.ts` | **新增** | ~80 行 | summon tool 定义 + execute 逻辑 |
+| `pane-comm/summon.ts` | **新增** | ~70 行 | summon tool 定义 + execute 逻辑（复用已有 `callWorker`） |
 | `pane-comm/interceptor.ts` | 修改 | ~15 行 | input hook 中增加 `commType === 'Summon'` 独立分支 |
 | `index.ts` | 修改 | ~5 行 | 条件注册 summon |
-| `config.json` | 修改（可选） | ~5 行 | 加 `assistants` 示例配置 |
+| `config.json` | 修改 | ~5 行 | 加 `assistants` 配置 |
 
-**总改动量：约 150-170 行**，符合评估文档预估。
+> **注：** `callWorker.ts` 已在之前的重构中实现（创建 pane → 等待就绪 → 占位符替换 → 写入消息），summon 直接复用，无需额外改动。`delegates.ts` 不需要修改（`sendDelegate` 已被 `callWorker` 替代，`delegateMsgMaker` 保留给 dd/dc 使用）。
+
+**总改动量：约 120-130 行**。
 
 ---
 
@@ -104,7 +105,7 @@ export function buildMessage(
 }
 ```
 
-**⚠️ 向后兼容保证：** `assistant` 参数有默认值 `undefined`，现有所有调用点（`delegates.ts` 的 `sendDelegate`、`interceptor.ts` 的 `agent_end` 回复）都不传此参数，不需要任何修改。
+**⚠️ 向后兼容保证：** `assistant` 参数有默认值 `undefined`，现有所有调用点（`dd.ts`、`dc.ts`、`interceptor.ts` 的 `agent_end` 回复）都不传此参数，不需要任何修改。
 
 **验证：**
 - 现有 `/dd`、`/dc` 的消息构建和解析正常
@@ -112,87 +113,17 @@ export function buildMessage(
 
 ---
 
-## Step 3: delegates.ts — 抽取 spawnWorker 公共函数
+## Step 3: summon.ts — summon tool 定义（新文件）
 
-**依赖：Step 2（buildMessage 签名变化，但默认值保证兼容）**
+**依赖：Step 1（AssistantConfig）、Step 2（buildMessage 带 assistant）**
 
-**目标：** 将 `sendDelegate` 中的 "创建 pane → 等待就绪 → 发送消息" 流程抽取为独立的 `spawnWorker()` 函数，供 delegate 和 summon 共用。
+这是核心新增文件。遵循与 `dd.ts` / `dc.ts` 相同的模式：自己拼 cmd + msg，调用 `callWorker`。
 
-**改动内容：**
-
-### 3.1 新增 SpawnWorkerOptions 类型
-
-```typescript
-export interface SpawnWorkerOptions {
-  model?: string;         // 传给 pi --model 的模型
-  geometryKey?: string;   // geometry 存储的 key（如 'worker' 或 'Lisa'）
-  title?: string;         // pane 标题
-  contextFile?: string;   // --fork 的 session 文件
-}
-```
-
-### 3.2 抽取 spawnWorker 函数
-
-从 `sendDelegate` 中提取以下逻辑到 `spawnWorker`：
-
-```
-1. 构建 pi 命令参数（--fork、--model、--agentMode）
-2. createFloatingPane
-3. 清理残留 readiness 文件
-4. 轮询等待 Worker 就绪
-5. buildMessage + writeToPane
-```
-
-函数签名：
-
-```typescript
-export async function spawnWorker(
-  ctx: ExtensionContext,
-  msg: CompleteDelegateMsg & { assistant?: string },
-  opts: SpawnWorkerOptions,
-): Promise<string>   // 返回 workerPaneId
-```
-
-关键细节：
-- `opts.model` 有值时用 `opts.model`，否则用 `config.models`
-- `buildMessage` 调用需传入 `msg.assistant`（新参数）
-- 返回 `workerPaneId`，调用方可用于后续操作
-
-### 3.3 改写 sendDelegate
-
-`sendDelegate` 变为 `spawnWorker` 的薄包装：
-
-```typescript
-export async function sendDelegate(
-  ctx: ExtensionContext,
-  msg: CompleteDelegateMsg,
-  contextFile?: string
-): Promise<void> {
-  const config = loadConfig();
-  await spawnWorker(ctx, msg, {
-    model: undefined,              // 用 config.models
-    geometryKey: 'worker',
-    title: config.names.worker,
-    contextFile,
-  });
-}
-```
-
-**验证：**
-- `/dd` 和 `/dc` 行为不变
-- `spawnWorker` 可被外部模块正确调用
-
----
-
-## Step 4: summon.ts — summon tool 定义（新文件）
-
-**依赖：Step 1（AssistantConfig）、Step 2（buildMessage 带 assistant）、Step 3（spawnWorker）**
-
-这是核心新增文件。
+**为什么不抽取 `spawnWorker`：** `delegates.ts` 的 `delegateMsgMaker` 绑定了 `config.names.worker` 和 `agent` 字段，而 Summon 需要动态 `secondName`（用 assistant alias）和 `assistant` 字段，两者消息构造逻辑不同。与其强行抽象出共享函数再传一堆差异化参数，不如各自拼装——与 dd/dc 同模式，更简单直接。
 
 **改动内容：**
 
-### 4.1 导入
+### 3.1 导入
 
 ```typescript
 import { Type } from 'typebox';
@@ -200,13 +131,13 @@ import { StringEnum } from '@earendil-works/pi-ai';  // pi 扩展标准导入，
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import { loadConfig } from '../config';
 import { getMyPaneId } from '../lib/zellij';
-import { generateCommId } from './msg-protocol';
-import { spawnWorker } from './delegates';
+import { generateCommId, buildMessage } from './msg-protocol';
+import { callWorker } from './callWorker';
 ```
 
 > **`StringEnum` 说明：** 来自 `@earendil-works/pi-ai`，是 pi 扩展文档中推荐的标准方式（所有 enum 参数工具示例均使用此导入）。必须用 `StringEnum` 而非 TypeBox 原生的 `Type.Union`/`Type.Literal`，后者不兼容 Google API。
 
-### 4.2 registerSummonTool 函数
+### 3.2 registerSummonTool 函数
 
 ```typescript
 export function registerSummonTool(pi: ExtensionAPI) {
@@ -242,27 +173,28 @@ export function registerSummonTool(pi: ExtensionAPI) {
         };
       }
 
-      // 构造 summon 消息（不走 delegateMsgMaker）
-      const msg = {
-        firstPaneId: getMyPaneId(),
-        secondPaneId: '',
-        firstName: config.names.main,
-        secondName: found.alias,
-        needReply: true,
-        commId: generateCommId(),
-        commType: 'Summon',
-        markdown: task,
-        agent: '',
-        assistant: found.alias,
-        firstPid: process.pid,
-      };
+      // 拼 cmd（与 dd.ts 同模式，但用 assistant 的 model）
+      let cmd = 'pi';
+      cmd += ` --model ${found.model}`;
+      if (config.mode && config.mode !== 'plan') cmd += ` --agentMode ${config.mode}`;
+
+      // 拼 msg（secondPaneId 用占位符，callWorker 会替换为真实 ID）
+      const message = buildMessage(
+        getMyPaneId(),            // firstPaneId
+        '__WORKER_PANE_ID__',     // secondPaneId 占位符
+        config.names.main,        // firstName
+        found.alias,              // secondName
+        true,                     // needReply
+        generateCommId(),         // commId
+        'Summon',                 // commType
+        task,                     // markdown
+        undefined,                // agent（summon 不指定 agent）
+        process.pid,              // firstPid
+        found.alias,              // assistant（新字段，Step 2 新增）
+      );
 
       try {
-        const workerPaneId = await spawnWorker(ctx, msg, {
-          model: found.model,
-          geometryKey: found.alias,
-          title: found.alias,
-        });
+        const workerPaneId = await callWorker(cmd, message, found.alias);
 
         return {
           content: [{ type: "text", text: `✓ 已召唤 ${found.alias}（模型: ${found.model}）到 pane ${workerPaneId} 执行任务。` }],
@@ -277,13 +209,14 @@ export function registerSummonTool(pi: ExtensionAPI) {
 }
 ```
 
-### 4.3 关键设计点
+### 3.3 关键设计点
 
-1. **StringEnum 动态值** — `aliases` 来自 config，不硬编码
-2. **消息构造独立** — 不调用 `delegateMsgMaker()`，用自己的 `commType: 'Summon'` 和 `assistant` 字段
-3. **错误处理返回结构化结果** — 不 throw，让 LLM 理解错误并生成友好回复
-4. **geometryKey 用 alias** — 每个 assistant 窗口位置独立记忆
-5. **model 走 --model 参数** — 通过 `spawnWorker` 的 `opts.model` 传入
+1. **与 dd/dc 同模式** — 自己拼 cmd + msg，调用 `callWorker`，不经过 `delegateMsgMaker` 或 `delegates.ts`
+2. **StringEnum 动态值** — `aliases` 来自 config，不硬编码
+3. **消息构造独立** — 用 `commType: 'Summon'` 和 `assistant` 字段，不走 `delegateMsgMaker()`
+4. **错误处理返回结构化结果** — 不 throw，让 LLM 理解错误并生成友好回复
+5. **geometryKey 用 alias** — 每个 assistant 窗口位置独立记忆（通过 `callWorker` 的 `workerName` 参数）
+6. **model 走 --model 参数** — 直接拼入 cmd 字符串
 
 **验证：**
 - 在 pi 中说 "让 Lisa 帮我搜索一下"，确认 Main LLM 调用 summon 工具
@@ -292,7 +225,7 @@ export function registerSummonTool(pi: ExtensionAPI) {
 
 ---
 
-## Step 5: interceptor.ts — Summon 独立分支
+## Step 4: interceptor.ts — Summon 独立分支
 
 **依赖：Step 2（parseMessage 能解析 assistant 字段）**
 
@@ -307,7 +240,7 @@ if (message.commType === 'Summon') {
   const fromName = message.firstName;
   const assistant = message.assistant;
   
-  ctx.ui.notify(`📨 收到来自 ${fromName} 的召唤（给 ${message.secondName}）`, 'info');
+  ctx.ui.notify(`📨 收到来自 ${fromName} 的召唤（${assistant}）`, 'info');
   
   currTask = {
     firstPaneId: message.firstPaneId,
@@ -317,11 +250,12 @@ if (message.commType === 'Summon') {
     needReply: message.needReply,
     commId: message.commId,
     commType: message.commType,
+    assistant: message.assistant,
     firstPid: message.firstPid,
     receivedAt: Date.now(),
   };
 
-  pi.sendUserMessage(`[来自 ${fromName} 的召唤]\n${message.markdown}`);
+  pi.sendUserMessage(`[来自 ${fromName} 的召唤（${assistant}）]\n${message.markdown}`);
   return { action: 'handled' };
 }
 
@@ -340,13 +274,13 @@ if (message.commType === 'Summon') {
 
 ---
 
-## Step 6: index.ts — 条件注册 + config.json 示例
+## Step 5: index.ts — 条件注册 + config.json 示例
 
 **依赖：Step 4（registerSummonTool 函数）**
 
 **改动内容：**
 
-### 6.1 index.ts
+### 5.1 index.ts
 
 ```typescript
 import { registerSummonTool } from './pane-comm/summon';
@@ -367,16 +301,21 @@ export default function (pi: ExtensionAPI) {
 }
 ```
 
-### 6.2 config.json（可选 — 用户自行配置）
+### 5.2 config.json — 新增 assistants 字段
 
-包内默认 config.json 不含 `assistants`（保持向后兼容）。用户在 `.pi/pi-in-zellij/config.json` 中按需添加：
+在包内默认 config.json 中新增 `assistants` 数组：
 
 ```json
 {
+  "names": {
+    "main": "Main",
+    "worker": "Lisa"
+  },
   "assistants": [
     { "alias": "Lisa", "model": "minimax-cn/MiniMax-M2.7:medium" },
     { "alias": "Jackey", "model": "zai/glm-5.1:high" }
-  ]
+  ],
+  ...其余字段不变
 }
 ```
 
@@ -391,19 +330,17 @@ export default function (pi: ExtensionAPI) {
 
 ```
 Step 1 (config.ts)  ──┐
-                       ├── Step 4 (summon.ts) ── Step 6 (index.ts)
+                       ├── Step 3 (summon.ts) ── Step 5 (index.ts)
 Step 2 (msg-protocol) ─┤
-                       └── Step 3 (delegates.ts) ┘
-Step 5 (interceptor.ts) ──────────────── (依赖 Step 2)
+Step 4 (interceptor.ts) ┘
 ```
 
 - **Step 1 + Step 2** 可并行
-- **Step 3** 依赖 Step 2 的 buildMessage 签名（但默认值保证兼容，实际可并行后 merge）
-- **Step 4** 依赖 Step 1 + 2 + 3
-- **Step 5** 依赖 Step 2
-- **Step 6** 依赖 Step 4
+- **Step 3** 依赖 Step 1 + 2，复用已有 `callWorker.ts`
+- **Step 4** 依赖 Step 2
+- **Step 5** 依赖 Step 3
 
-**建议实施顺序：** 1 → 2 → 3 → 4 → 5 → 6（线性，最安全）
+**建议实施顺序：** 1 → 2 → 3 → 4 → 5（线性，最安全）
 
 ---
 
@@ -424,6 +361,7 @@ Step 5 (interceptor.ts) ──────────────── (依赖
 ### 多 Worker
 - [ ] 同时 summon 两个不同 assistant（如 Lisa + Jackey），各自独立 pane
 - [ ] 两个 assistant 的 geometry 各自记忆，互不干扰
+- [ ] 多 Summon 同时存在时，各自的 `agent_end` 回复正确路由到各自的发起方
 
 ### 错误处理
 - [ ] assistant 的 model 写错时，floating pane 显示错误信息，不崩溃
@@ -443,26 +381,3 @@ Step 5 (interceptor.ts) ──────────────── (依赖
 3. **Agent 继承** — summon 时也能指定 agent（结合 `summon` + agent 的能力）
 4. **自动委派** — Main LLM 不仅在用户提到助手名时调用，还能主动判断任务适合委派
 
----
-
-## 审查修订记录
-
-基于代码审查反馈，对本计划做以下修订：
-
-### 修订 1：buildMessage 参数顺序（Step 2）
-
-原计划说「添加在 `agent` 参数之后」和「放在参数列表末尾」存在矛盾——`firstPid` 已经在末尾。
-
-**修正：** `assistant` 参数放在 `firstPid` 之后，即参数列表的最末尾位置（第 11 位）。所有现有调用点不传此参数，通过默认值 `undefined` 保证向后兼容。
-
-### 修订 2：spawnWorker 返回值（Step 3）
-
-原 `sendDelegate` 返回 `void`。`spawnWorker` 改为返回 `Promise<string>`（workerPaneId），让调用方（summon.ts）可以拿到 pane ID 用于通知等后续操作。summon.ts 的 execute 中已对应改为接收返回值。
-
-### 修订 3：StringEnum 导入确认（Step 4）
-
-`StringEnum` 来自 `@earendil-works/pi-ai`，是 pi 扩展文档（extensions.md）中推荐的标准导入方式，专门解决 Google API 兼容性问题（`Type.Union`/`Type.Literal` 不兼容 Google）。当前项目代码虽未使用过，但 pi 官方所有 enum 参数工具示例均使用此导入。
-
-### 修订 4：Summon 分支不设 agent（Step 5）
-
-`currTask` 不设 `agent` 字段是正确的——Summon 消息不含 agent。`agent_end` 里 `buildMessage` 回复调用当前只传 8 个参数（`agent` 走默认 `undefined`），不需要修改 `agent_end` 逻辑。Reply 路由只依赖 `firstPaneId` 和 `firstPid`，不依赖 `agent` 或 `secondName`。

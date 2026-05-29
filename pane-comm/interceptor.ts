@@ -64,6 +64,30 @@ export function registerInterceptor(pi: ExtensionAPI) {
     const message = parseMessage(event.text);
     if (!message) return { action: 'continue' };
 
+    // ---- Summon 分支（独立处理，不走原有 agent/needReply 逻辑）----
+    if (message.commType === 'Summon') {
+      const fromName = message.firstName;
+      const assistant = message.assistant;
+
+      ctx.ui.notify(`📨 收到来自 ${fromName} 的召唤（${assistant}）`, 'info');
+
+      currTask = {
+        firstPaneId: message.firstPaneId,
+        secondPaneId: message.secondPaneId,
+        firstName: message.firstName,
+        secondName: message.secondName,
+        needReply: message.needReply,
+        commId: message.commId,
+        commType: message.commType,
+        assistant: message.assistant,
+        firstPid: message.firstPid,
+        receivedAt: Date.now(),
+      };
+
+      pi.sendUserMessage(`[来自 ${fromName} 的召唤（${assistant}）]\n${message.markdown}`);
+      return { action: 'handled' };
+    }
+
     // 根据 commType 判断谁是实际发送方
     const fromName = (message.commType === 'Report' || message.commType === 'Info')
       ? message.secondName   // Report/Info 是 second 发的
