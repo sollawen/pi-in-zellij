@@ -139,7 +139,7 @@ export function getMyPaneId(): string {
  * @param opts.defaultHeight geometry 无记录时的默认高度（如 '70%'）
  */
 export async function createFloatingPane(opts: {
-  cmd: string[];
+  cmd: string;
   geometryKey?: string;
   title?: string;
   pinned?: boolean;
@@ -173,7 +173,7 @@ export async function createFloatingPane(opts: {
   args.push('--');
 
   const { stdout } = await execAsync(
-    ['zellij', ...args].map(shellQuote).concat(opts.cmd).join(' ')
+    ['zellij', ...args].map(shellQuote).join(' ') + ' ' + opts.cmd
   );
   const paneId = stdout.trim();
 

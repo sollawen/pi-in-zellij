@@ -15,9 +15,9 @@ dd.ts / dc.ts 自己拼装 cmd 和 msg 字符串，直接调用 `callWorker`。
 
 ## 已发现的 Bug 及修复方案
 
-### Bug 1：位置/宽度错误（已修复）
+### Bug 1：位置/宽度错误
 
-`callWorker` 传了 `workerName`（如 "Lisa"）作为 `geometryKey`，但旧数据存在 `[worker]` key 下。已改为固定 `'worker'`。
+`callWorker` 传了 `workerName`（如 "Lisa"）作为 `geometryKey`，但旧数据存在 `[worker]` key 下。首次会使用 default 位置，关闭 pane 后会保存新位置，后续正常。不需要修复。
 
 ### Bug 2：worker 不退出、不回传结果
 
@@ -79,7 +79,7 @@ export async function callWorker(
   // 1. 创建 worker pane
   const workerPaneId = await createFloatingPane({
     cmd,
-    geometryKey: 'worker',               // 固定 key，和已保存的位置数据一致
+    geometryKey: workerName,
     title: workerName,
     pinned: true,
     defaultWidth: config.workerPane.width,

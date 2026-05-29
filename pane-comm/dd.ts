@@ -5,7 +5,10 @@
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
 import type { AutocompleteItem } from '@earendil-works/pi-tui';
 import { isInZellij } from '../lib/zellij';
-import { delegateMsgMaker, sendDelegate } from './delegates';
+import { delegateMsgMaker } from './delegates';
+import { callWorker } from './callWorker';
+import { buildMessage } from './msg-protocol';
+import { loadConfig } from '../config';
 import { agentList } from '../lib/agents';
 
 export function registerDdCommand(pi: ExtensionAPI) {
@@ -33,9 +36,31 @@ export function registerDdCommand(pi: ExtensionAPI) {
         return;
       }
 
+      const config = loadConfig();
       const msg = delegateMsgMaker(userInput);
       msg.markdown = msg.task;
-      await sendDelegate(ctx, msg);
+
+      // 拼 cmd
+      let cmd = 'pi';
+      if (config.models && config.models !== 'auto') cmd += ` --model ${config.models}`;
+      if (config.mode && config.mode !== 'plan') cmd += ` --agentMode ${config.mode}`;
+
+      // 拼 msg（secondPaneId 用占位符，callWorker 会替换为真实 ID）
+      const message = buildMessage(
+        msg.firstPaneId,
+        '__WORKER_PANE_ID__',
+        msg.firstName,
+        msg.secondName,
+        msg.needReply,
+        msg.commId,
+        msg.commType,
+        msg.markdown,
+        msg.agent,
+        msg.firstPid,
+      );
+
+      const workerPaneId = await callWorker(cmd, message, 'worker');
+      ctx.ui.notify(`✓ Worker 已创建并发送: pane ${workerPaneId}`, 'info');
     },
   });
 }

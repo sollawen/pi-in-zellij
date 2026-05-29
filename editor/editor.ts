@@ -35,7 +35,7 @@ export function registerEditorShortcut(pi: ExtensionAPI) {
         const quotedScript = `'${script.replace(/'/g, "'\\''")}'`;
 
         await createFloatingPane({
-          cmd: ['sh', '-c', quotedScript, '--', tmpFile],
+          cmd: `sh -c ${quotedScript} -- ${tmpFile}`,
           geometryKey: 'editor',
           title: PANE_NAME,
           pinned: true,
