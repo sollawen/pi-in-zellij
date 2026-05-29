@@ -3,10 +3,7 @@
     "main": "Main",
     "worker": "Mike"
   },
-  "assistants": [
-    { "alias": "Lisa", "model": "minimax-cn/MiniMax-M2.7:medium" },
-    { "alias": "Jackey", "model": "zai/glm-3.1:high" }
-  ],
+  "assistants": [],
   "workerPane": {
     "floating": true,
     "pinned": true,

@@ -9,6 +9,7 @@ import { registerDcCommand } from './pane-comm/dc';
 import { registerDdCommand } from './pane-comm/dd';
 import { registerInterceptor } from './pane-comm/interceptor';
 import { registerSummonTool } from './pane-comm/summon';
+import { registerSummonSetupCommand } from './pane-comm/summon-setup';
 import { loadConfig } from './config';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -42,4 +43,6 @@ export default function (pi: ExtensionAPI) {
   if (config.assistants?.length) {
     registerSummonTool(pi);
   }
+
+  registerSummonSetupCommand(pi);
 }
