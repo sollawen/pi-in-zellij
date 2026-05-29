@@ -7,17 +7,21 @@
 import { Type } from 'typebox';
 import { StringEnum } from '@earendil-works/pi-ai';
 import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
-import { loadConfig } from '../config';
+import { loadConfig, type AssistantConfig } from '../config';
 import { getMyPaneId } from '../lib/zellij';
 import { generateCommId, buildMessage } from './msg-protocol';
 import { callWorker } from './callWorker';
 
 /**
  * 注册 summon tool
+ *
+ * @param pi - ExtensionAPI 实例
+ * @param assistantsOverride - 可选，预过滤的助手列表（用于 Phase A 模型校验）
+ *                              若不传则从 config.assistants 读取
  */
-export function registerSummonTool(pi: ExtensionAPI) {
+export function registerSummonTool(pi: ExtensionAPI, assistantsOverride?: AssistantConfig[]) {
   const config = loadConfig();
-  const assistants = config.assistants ?? [];
+  const assistants = assistantsOverride ?? config.assistants ?? [];
   const aliases = assistants.map(a => a.alias);
 
   if (aliases.length === 0) return;  // 安全检查：无配置时不注册
@@ -39,8 +43,8 @@ export function registerSummonTool(pi: ExtensionAPI) {
     ],
     async execute(toolCallId, params, signal, onUpdate, ctx) {
       const { assistant, task } = params;
-      const config = loadConfig();
-      const found = config.assistants?.find(a => a.alias === assistant);
+      // 用闭包中的 assistants，不再重新 loadConfig
+      const found = assistants.find(a => a.alias === assistant);
 
       if (!found) {
         return {
