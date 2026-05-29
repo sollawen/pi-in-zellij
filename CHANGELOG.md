@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.0
+- 如果config.json里面的模型不存在，则会报错，要想办法
+
 ## 0.2.3
 - Fixed: removed debug `console.log` that polluted main pi TUI input
 - Changed: error logging in worker readiness handler uses `console.error` instead of `console.log`
