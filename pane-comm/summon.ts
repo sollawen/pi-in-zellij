@@ -6,7 +6,7 @@
 
 import { Type } from 'typebox';
 import { StringEnum } from '@earendil-works/pi-ai';
-import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
+import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent';
 import { loadConfig, type AssistantConfig } from '../config';
 import { getMyPaneId } from '../lib/zellij';
 import { generateCommId, buildMessage } from './msg-protocol';
@@ -33,7 +33,7 @@ export function registerSummonTool(pi: ExtensionAPI, assistantsOverride?: Assist
     parameters: Type.Object({
       assistant: StringEnum(aliases as [string, ...string[]], {
         description: "助手别名，仅在用户明确提及时使用"
-      }),
+      }) as any,
       task: Type.String({ description: "要执行的任务描述" }),
     }),
     promptSnippet: "召唤指定助手到 floating pane 执行任务",
@@ -41,7 +41,7 @@ export function registerSummonTool(pi: ExtensionAPI, assistantsOverride?: Assist
       "只在用户明确提到助手名字时使用 summon 工具。",
       "使用 summon 时，根据对话上下文起草一个完整清晰的 task prompt。",
     ],
-    async execute(toolCallId, params, signal, onUpdate, ctx) {
+    async execute(toolCallId: string, params: { assistant: string; task: string }, signal: AbortSignal | undefined, onUpdate: any, ctx: ExtensionContext) {
       const { assistant, task } = params;
       // 用闭包中的 assistants，不再重新 loadConfig
       const found = assistants.find(a => a.alias === assistant);
@@ -49,6 +49,7 @@ export function registerSummonTool(pi: ExtensionAPI, assistantsOverride?: Assist
       if (!found) {
         return {
           content: [{ type: "text", text: `错误：找不到助手 "${assistant}"。请检查 config.json 中的 assistants 配置。` }],
+          details: {},
         };
       }
 
@@ -77,10 +78,12 @@ export function registerSummonTool(pi: ExtensionAPI, assistantsOverride?: Assist
 
         return {
           content: [{ type: "text", text: `✓ 已召唤 ${found.alias}（模型: ${found.model}）到 pane ${workerPaneId} 执行任务。` }],
+          details: {},
         };
       } catch (err: any) {
         return {
           content: [{ type: "text", text: `召唤 ${found.alias} 失败：${err.message}` }],
+          details: {},
         };
       }
     },

@@ -1,4 +1,4 @@
-import type { ExtensionAPI } from '@earendil-works/pi-coding-agent';
+import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent';
 import { DynamicBorder } from '@earendil-works/pi-coding-agent';
 import { Container, SelectList, Text, type SelectItem } from '@earendil-works/pi-tui';
 import { loadConfig, saveConfig } from '../config';
@@ -10,7 +10,7 @@ import type { AssistantConfig } from '../config';
  * @param ctx - Extension context
  * @returns 助配置列表（用户可能跳过向导，返回 []）
  */
-export async function runSummonSetup(ctx: { modelRegistry: ExtensionAPI['modelRegistry']; ui: ExtensionAPI['ui'] }): Promise<AssistantConfig[]> {
+export async function runSummonSetup(ctx: ExtensionContext): Promise<AssistantConfig[]> {
   const available = ctx.modelRegistry.getAvailable();
 
   if (available.length === 0) {

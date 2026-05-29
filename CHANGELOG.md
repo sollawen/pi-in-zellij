@@ -1,7 +1,11 @@
 # Changelog
 
-## 0.3.0
-- 如果config.json里面的模型不存在，则会报错，要想办法
+## 0.3.2
+- Added: automatic summon-setup wizard on first startup when no assistants configured
+  - Startup + empty assistants → shows prompt + launches wizard
+  - Startup + invalid assistants → shows warning + launches wizard
+  - Reload/other scenarios → shows sendMessage hint only (no wizard)
+  - Extracted `runSummonSetup()` from command handler for reuse
 
 ## 0.2.3
 - Fixed: removed debug `console.log` that polluted main pi TUI input
