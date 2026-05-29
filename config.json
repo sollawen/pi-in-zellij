@@ -5,7 +5,7 @@
   },
   "assistants": [
     { "alias": "Lisa", "model": "minimax-cn/MiniMax-M2.7:medium" },
-    { "alias": "Jackey", "model": "zai/glm-5.1:high" }
+    { "alias": "Jackey", "model": "zai/glm-3.1:high" }
   ],
   "workerPane": {
     "floating": true,
