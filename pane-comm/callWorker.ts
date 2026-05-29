@@ -29,8 +29,9 @@ export async function callWorker(
   const config = loadConfig();
 
   // 1. 创建 worker pane
+  const taggedCmd = `bash -c 'PI_FLOATING_WORKER=1 ${cmd}'`;
   const workerPaneId = await createFloatingPane({
-    cmd,
+    cmd: taggedCmd,
     geometryKey: workerName,
     title: workerName,
     pinned: true,

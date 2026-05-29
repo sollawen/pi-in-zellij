@@ -10,10 +10,27 @@ import { registerDdCommand } from './pane-comm/dd';
 import { registerInterceptor } from './pane-comm/interceptor';
 import { registerSummonTool } from './pane-comm/summon';
 import { loadConfig } from './config';
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { homedir } from 'node:os';
+import { getMyPaneId } from './lib/zellij';
 
 export default function (pi: ExtensionAPI) {
   // 不在 zellij 中时，跳过所有 zellij 相关功能
   if (!process.env.ZELLIJ) return;
+
+  // ---- session_start：worker pane 就绪后写入 readiness file ----
+  pi.on('session_start', () => {
+    if (!process.env.PI_FLOATING_WORKER) return; // 只有 worker 才写
+    try {
+      const piTmpDir = join(homedir(), '.pi', 'tmp');
+      mkdirSync(piTmpDir, { recursive: true });
+      const readinessFile = join(piTmpDir, `pi-in-zellij-ready-${getMyPaneId()}`);
+      writeFileSync(readinessFile, 'ready', 'utf8');
+    } catch (err) {
+      console.error('[pi-in-zellij] failed to write readiness file:', err);
+    }
+  });
 
   registerEditorShortcut(pi);
   registerDcCommand(pi);

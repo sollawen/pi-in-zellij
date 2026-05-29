@@ -1,7 +1,7 @@
 {
   "names": {
     "main": "Main",
-    "worker": "Lisa"
+    "worker": "Mike"
   },
   "assistants": [
     { "alias": "Lisa", "model": "minimax-cn/MiniMax-M2.7:medium" },

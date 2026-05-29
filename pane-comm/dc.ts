@@ -68,7 +68,7 @@ export function registerDcCommand(pi: ExtensionAPI) {
         msg.firstPid,
       );
 
-      const workerPaneId = await callWorker(cmd, message, 'worker');
+      const workerPaneId = await callWorker(cmd, message, config.names.worker);
       ctx.ui.notify(`✓ Worker 已创建并发送: pane ${workerPaneId}`, 'info');
     },
   });
