@@ -185,4 +185,4 @@ pi.on('session_start', async (event, ctx) => {
 - [x] ctx.ui 可用性验证（test1-4 全部通过）
 - [x] reload 时 notify 消失根因定位（源码分析）
 - [x] 评估通过
-- [ ] 实现
+- [x] 实现

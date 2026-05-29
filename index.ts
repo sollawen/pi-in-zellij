@@ -9,7 +9,7 @@ import { registerDcCommand } from './pane-comm/dc';
 import { registerDdCommand } from './pane-comm/dd';
 import { registerInterceptor } from './pane-comm/interceptor';
 import { registerSummonTool } from './pane-comm/summon';
-import { registerSummonSetupCommand } from './pane-comm/summon-setup';
+import { runSummonSetup, registerSummonSetupCommand } from './pane-comm/summon-setup';
 import { loadConfig, saveConfig } from './config';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -39,46 +39,75 @@ export default function (pi: ExtensionAPI) {
 
     const config = loadConfig();
     const assistantList = [...(config.assistants ?? [])];
-    let assReady = true;
+    const available = ctx.modelRegistry.getAvailable();
+    const validModelIds = new Set(available.map(m => `${m.provider}/${m.id}`));
 
-    if (assistantList.length === 0) {
-      assReady = false;
-    } else {
-      const available = ctx.modelRegistry.getAvailable();
-      const validModelIds = new Set(available.map(m => `${m.provider}/${m.id}`));
-
-      const toDelete: typeof assistantList = [];
-      for (let i = assistantList.length - 1; i >= 0; i--) {
-        if (!validModelIds.has(assistantList[i].model)) {
-          toDelete.push(assistantList[i]);
-          assistantList.splice(i, 1);
-        }
+    // 清理无效助理
+    const deleted: typeof assistantList = [];
+    const valid: typeof assistantList = [];
+    for (const a of assistantList) {
+      if (validModelIds.has(a.model)) {
+        valid.push(a);
+      } else {
+        deleted.push(a);
       }
+    }
 
-      if (toDelete.length > 0) {
-        saveConfig({ assistants: assistantList });
+    if (deleted.length > 0) {
+      saveConfig({ assistants: valid });
+    }
+
+    const isStartup = _event.reason === 'startup';
+
+    if (valid.length === 0) {
+      // 无助理
+      if (isStartup) {
+        // 首次启动：弹向导
+        ctx.ui.notify('请给你最喜欢的模型起个名字，以后它就会陪在你身边', 'info');
+        const assistants = await runSummonSetup(ctx);
+        if (assistants && assistants.length > 0) {
+          saveConfig({ assistants });
+          registerSummonTool(pi, assistants);
+        }
+      } else {
+        // reload 等其他情况：不弹向导
         pi.sendMessage({
           customType: 'summon-setup',
-          content: `⚠️ 已移除无效助手: ${toDelete.map(a => `${a.alias}(${a.model})`).join(', ')}。请运行 /summon-setup 重新配置。`,
+          content: '⚠️ 尚未配置助手，需要使用 /summon-setup 来设置你的助理',
           display: true,
         });
       }
-
-      if (assistantList.length === 0) {
-        assReady = false;
-      }
-    }
-
-    if (!assReady) {
-      pi.sendMessage({
-        customType: 'summon-setup',
-        content: '⚠️ 尚未配置助手，请运行 /summon-setup 配置。',
-        display: true,
-      });
       return;
     }
 
-    registerSummonTool(pi, assistantList);
+    if (deleted.length > 0) {
+      // 部分失效
+      const deletedNames = deleted.map(a => a.alias).join(', ');
+      if (isStartup) {
+        // 首次启动：弹向导
+        ctx.ui.notify(`你的助理 ${deletedNames} 已失效了，请重新配置`, 'warning');
+        const assistants = await runSummonSetup(ctx);
+        if (assistants && assistants.length > 0) {
+          saveConfig({ assistants });
+          registerSummonTool(pi, assistants);
+        } else {
+          // 用户跳过向导，注册剩余有效的
+          registerSummonTool(pi, valid);
+        }
+      } else {
+        // reload 等其他情况
+        pi.sendMessage({
+          customType: 'summon-setup',
+          content: `⚠️ 你的助理 ${deletedNames} 已失效了，需要使用 /summon-setup 来配置`,
+          display: true,
+        });
+        registerSummonTool(pi, valid);
+      }
+      return;
+    }
+
+    // 一切正常
+    registerSummonTool(pi, valid);
   });
 
   registerEditorShortcut(pi);
