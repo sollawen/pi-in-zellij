@@ -54,7 +54,7 @@ export function registerInterceptor(pi: ExtensionAPI) {
       const fromName = message.firstName;
       const assistant = message.assistant;
 
-      ctx.ui.notify(`📨 收到来自 ${fromName} 的召唤（${assistant}）`, 'info');
+      ctx.ui.notify(`📨 Summoned by ${fromName} (${assistant})`, 'info');
 
       currTask = {
         firstPaneId: message.firstPaneId,
@@ -69,7 +69,7 @@ export function registerInterceptor(pi: ExtensionAPI) {
         receivedAt: Date.now(),
       };
 
-      pi.sendUserMessage(`[来自 ${fromName} 的召唤（${assistant}）]\n${message.markdown}`);
+      pi.sendUserMessage(`Delegated Task:\n${message.markdown}`);
       return { action: 'handled' };
     }
 
@@ -83,9 +83,9 @@ export function registerInterceptor(pi: ExtensionAPI) {
     if (message.agent && message.agent !== '') {
       agentContent = readAgent(message.agent);
       if (agentContent) {
-        ctx.ui.notify(`📋 已加载 agent: ${message.agent}`, 'info');
+        ctx.ui.notify(`📋 Agent loaded: ${message.agent}`, 'info');
       } else {
-        ctx.ui.notify(`⚠️ Agent "${message.agent}" 读取失败`, 'warning');
+        ctx.ui.notify(`⚠️ Failed to load agent "${message.agent}"`, 'warning');
       }
     }
 
@@ -98,12 +98,12 @@ export function registerInterceptor(pi: ExtensionAPI) {
     if (!message.needReply) {
       return {
         action: 'transform',
-        text: `[来自 ${fromName} 的${message.commType}]\n${enhancedContent}`,
+        text: `Delegated Task:\n${enhancedContent}`,
       };
     }
 
     // 需要回复 → 记录发送方，把任务送给 LLM
-    ctx.ui.notify(`📨 收到来自 ${fromName} 的${message.commType}`, 'info');
+    ctx.ui.notify(`📨 ${message.commType} from ${fromName}`, 'info');
 
     currTask = {
       firstPaneId: message.firstPaneId,
@@ -117,7 +117,7 @@ export function registerInterceptor(pi: ExtensionAPI) {
       receivedAt: Date.now(),
     };
 
-    pi.sendUserMessage(`[来自 ${fromName} 的${message.commType}]\n${enhancedContent}`);
+    pi.sendUserMessage(`Delegated Task:\n${enhancedContent}`);
     return { action: 'handled' };
   });
 

@@ -29,17 +29,17 @@ export function registerSummonTool(pi: ExtensionAPI, assistantsOverride?: Assist
   pi.registerTool({
     name: "summon",
     label: "Summon Assistant",
-    description: "召唤一个助手到 floating pane 执行任务。只在用户明确提到助手名字时使用。",
+    description: "Summon an assistant to a floating pane. Only use when the user explicitly mentions an assistant's name.",
     parameters: Type.Object({
       assistant: StringEnum(aliases as [string, ...string[]], {
-        description: "助手别名，仅在用户明确提及时使用"
+        description: "Assistant alias, only use when explicitly mentioned by the user"
       }) as any,
-      task: Type.String({ description: "要执行的任务描述" }),
+      task: Type.String({ description: "Task description to execute" }),
     }),
-    promptSnippet: "召唤指定助手到 floating pane 执行任务",
+    promptSnippet: "Summon the specified assistant to a floating pane to execute a task",
     promptGuidelines: [
-      "只在用户明确提到助手名字时使用 summon 工具。",
-      "使用 summon 时，根据对话上下文起草一个完整清晰的 task prompt。",
+      "Only use the summon tool when the user explicitly mentions an assistant's name.",
+      "When using summon, draft a complete and clear task prompt based on the conversation context.",
     ],
     async execute(toolCallId: string, params: { assistant: string; task: string }, signal: AbortSignal | undefined, onUpdate: any, ctx: ExtensionContext) {
       const { assistant, task } = params;
@@ -48,7 +48,7 @@ export function registerSummonTool(pi: ExtensionAPI, assistantsOverride?: Assist
 
       if (!found) {
         return {
-          content: [{ type: "text", text: `错误：找不到助手 "${assistant}"。请检查 config.json 中的 assistants 配置。` }],
+          content: [{ type: "text", text: `Error: "${assistant}" not available. Please /summon-setup to config assistants.` }],
           details: {},
         };
       }
@@ -77,12 +77,12 @@ export function registerSummonTool(pi: ExtensionAPI, assistantsOverride?: Assist
         const workerPaneId = await callWorker(cmd, message, found.alias);
 
         return {
-          content: [{ type: "text", text: `✓ 已召唤 ${found.alias}（模型: ${found.model}）到 pane ${workerPaneId} 执行任务。` }],
+          content: [{ type: "text", text: `Summon: ${found.alias} is working...` }],
           details: {},
         };
       } catch (err: any) {
         return {
-          content: [{ type: "text", text: `召唤 ${found.alias} 失败：${err.message}` }],
+          content: [{ type: "text", text: `Error: Failed to summon ${found.alias}: ${err.message}` }],
           details: {},
         };
       }
