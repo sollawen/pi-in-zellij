@@ -1,32 +1,20 @@
 # pi-in-zellij
 
 
-## Why?
+## 🖊️  Floating editor pane
 
-**Pi only supports tmux out of the box.** But let's be honest — Zellij is just *gorgeous*. Floating panes, smooth UX, modern feel. Who is Tmux?
+Hit `alt+e` and a floating editor pane appears right in your zellij. Edit code or notes while keeping Pi's full context visible beside you. No more alt-tabbing to a separate editor. And, *you can move and resize this floating pane anywhere*. No more losing your train of thought.
 
-So I built this extension to bring Pi into Zellij, and things got a lot more interesting along the way.
-
-<img src="https://raw.githubusercontent.com/sollawen/pi-in-zellij/main/pi-in-zellij.jpg" style="width: 40%;">
-
-
-## What can it do?
-
-### 🖊️  Floating editor pane
-
-Hit `alt+e` and a floating editor pane appears right in your terminal. Edit code or notes while keeping Pi's full context visible beside you. No more alt-tabbing to a separate editor. And, *you can move and resize this floating pane anywhere*. No more losing your train of thought.
-
-Close the pane when you're done — your edits come right back into Pi's input. It's just *nice*.
+Close the pane when you're done — your edits come right back into Pi's input directly. It's just *nice*.
 
 ---
 
-### 🔄 Two Pies are better than one
+## 🌟 Rubbing a Magic Lamp and Making a Wish
 
-This is the real deal. Pi spawns *another Pi* in a floating pane, and they talk to each other over a tiny protocol.
+Two Pies are better than one. Summon your favorite LLM to do that annoying thing for you — rubbing a magic lamp, making a wish, then waiting for the blue spirit...
 
-- `/dd [agentName] <task>`: **D**irect **D**elegate — skip the prompt-polishing, send the task straight to the Worker
-- `/dc [agentName] <task>`: **D**elegate with **C**ontext — same as `/dd` but the Worker inherits your full conversation context
-- `[agentName]` is **ONLY optional**; omit it to delegate your order directly to the new Pi 
+- `/summon-setup` — give your favorite LLM a name, like *Lisa*
+- In the main Pi, tell Pi like *"have Lisa execute this plan", "let Lisa review the changes", "ask Lisa to find info about xxxx"* — Lisa will be summoned into a floating pane. Simple as that
 
 
 **Main-Pi thinks, Worker-Pi do.**
@@ -36,24 +24,18 @@ This is the real deal. Pi spawns *another Pi* in a floating pane, and they talk 
 - **No context pollution** — Worker-Pi runs in his own pane, main-Pi stays clean
 - **Full visibility** — every Pi output streams in front of you. Interrupt if needed.
 
+---
 
-**Agents ready.** 
+## 💾 Geometry memory
 
-If you have custom agents (defined in `.pi/agents/`), you can assign them to the Worker: `/dd code-reviewer "review this PR"`
-
-For more on agents and delegation, see [PI-AGENTS.md](./docs/PI-AGENTS.md).
+Pi remembers where you like your floating panes. Close a pane, open it again later — it comes back exactly where you left it. Pane positions are saved individually.
 
 ---
 
-> `/dc` is same as `/dd` but the Worker inherits your full conversation context via `pi --fork`. Use it when the discussion content matters for the Worker's task. For most tasks, `/dd` (no context) is the better default — faster and cheaper.
+<img src="https://raw.githubusercontent.com/sollawen/pi-in-zellij/main/pi-in-zellij.jpg" style="width: 50%;">
 
-### 💾 Geometry memory
 
-Pi remembers where you like your floating panes. Close a pane, open it again later — it comes back exactly where you left it. Pane positions are saved per-pane-type (editor vs. worker), stored in `~/.pi/tmp/zellij-geometry`.
-
----
-
-## Quick start
+## Install
 
 ```bash
 pi install npm:pi-in-zellij
@@ -61,19 +43,6 @@ pi install npm:pi-in-zellij
 
 That's it. Restart Pi and you're ready.
 
-
-## Configuration
-
-Want to customize? Create `.pi/pi-in-zellij/config.json` in your project root. Any field you set overrides the default — the rest stays as-is.
-
-**Example — use a cheap model for the Worker:**
-
-```json
-{
-  "models": "google/gemini-2.5-flash",
-  "mode": "work"
-}
-```
 
 ## Requirements
 
