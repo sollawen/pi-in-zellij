@@ -98,7 +98,7 @@ export function registerInterceptor(pi: ExtensionAPI) {
     if (!message.needReply) {
       return {
         action: 'transform',
-        text: `Delegated Task:\n${enhancedContent}`,
+        text: `Report from ${fromName}:\n${enhancedContent}`,
       };
     }
 
