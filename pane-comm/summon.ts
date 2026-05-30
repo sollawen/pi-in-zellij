@@ -40,6 +40,7 @@ export function registerSummonTool(pi: ExtensionAPI, assistantsOverride?: Assist
     promptGuidelines: [
       "Only use the summon tool when the user explicitly mentions an assistant's name.",
       "When using summon, draft a complete and clear task prompt based on the conversation context.",
+      "Instruct the assistant to use the appropriate skill, 'Use the {skill_name} skill'",
     ],
     async execute(toolCallId: string, params: { assistant: string; task: string }, signal: AbortSignal | undefined, onUpdate: any, ctx: ExtensionContext) {
       const { assistant, task } = params;
