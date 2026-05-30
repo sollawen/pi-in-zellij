@@ -63,7 +63,7 @@ export default function (pi: ExtensionAPI) {
       // 无助理
       if (isStartup) {
         // 首次启动：弹向导
-        ctx.ui.notify('请给你最喜欢的模型起个名字，以后它就会陪在你身边', 'info');
+        ctx.ui.notify('Name your favorite models, and they will always be by your side', 'info');
         const assistants = await runSummonSetup(ctx);
         if (assistants && assistants.length > 0) {
           saveConfig({ assistants });
@@ -73,7 +73,7 @@ export default function (pi: ExtensionAPI) {
         // reload 等其他情况：不弹向导
         pi.sendMessage({
           customType: 'summon-setup',
-          content: '⚠️ 尚未配置助手，需要使用 /summon-setup 来设置你的助理',
+          content: '⚠️ No assistants yet. Run /summon-setup to team up your assistants',
           display: true,
         });
       }
@@ -85,7 +85,7 @@ export default function (pi: ExtensionAPI) {
       const deletedNames = deleted.map(a => a.alias).join(', ');
       if (isStartup) {
         // 首次启动：弹向导
-        ctx.ui.notify(`你的助理 ${deletedNames} 已失效了，请重新配置`, 'warning');
+        ctx.ui.notify(`${deletedNames} are no longer available. Run /summon-setup to rename.`, 'warning');
         const assistants = await runSummonSetup(ctx);
         if (assistants && assistants.length > 0) {
           saveConfig({ assistants });
@@ -98,7 +98,7 @@ export default function (pi: ExtensionAPI) {
         // reload 等其他情况
         pi.sendMessage({
           customType: 'summon-setup',
-          content: `⚠️ 你的助理 ${deletedNames} 已失效了，需要使用 /summon-setup 来配置`,
+          content: `⚠️ ${deletedNames} are no longer available. Run /summon-setup to rename.`,
           display: true,
         });
         registerSummonTool(pi, valid);

@@ -14,7 +14,7 @@ export async function runSummonSetup(ctx: ExtensionContext): Promise<AssistantCo
   const available = ctx.modelRegistry.getAvailable();
 
   if (available.length === 0) {
-    ctx.ui.notify("没有可用的模型。请先配置 API Key（运行 /login）。", "error");
+    ctx.ui.notify("No models available in Pi. Please configure Pi first (run /login).", "error");
     return [];
   }
 
@@ -43,9 +43,7 @@ export async function runSummonSetup(ctx: ExtensionContext): Promise<AssistantCo
       const container = new Container();
 
       container.addChild(new DynamicBorder((s: string) => theme.fg("accent", s)));
-      container.addChild(new Text(theme.fg("accent", theme.bold("Summon Setup — 选择模型起名字")), 1, 0));
-      container.addChild(new Text(theme.fg("muted", "选一个模型起名字，Esc 完成并保存"), 1, 0));
-      container.addChild(new Text("", 0, 0)); // spacer
+      container.addChild(new Text(theme.fg("accent", theme.bold("Summon Setup — Give Your Favorite Models a Name")), 1, 0));
 
       const selectList = new SelectList(items, Math.min(items.length, 12), {
         selectedPrefix: (t) => theme.fg("accent", t),
@@ -58,7 +56,7 @@ export async function runSummonSetup(ctx: ExtensionContext): Promise<AssistantCo
       selectList.onCancel = () => done(null);
       container.addChild(selectList);
 
-      container.addChild(new Text(theme.fg("dim", "↑↓ 移动 · 回车选择 · Esc 保存退出"), 1, 0));
+      container.addChild(new Text(theme.fg("dim", "↑↓ Navigate · Enter Select · Esc Save & Exit"), 1, 0));
       container.addChild(new DynamicBorder((s: string) => theme.fg("accent", s)));
 
       return {
@@ -77,8 +75,8 @@ export async function runSummonSetup(ctx: ExtensionContext): Promise<AssistantCo
     // 弹出 input 让用户起名字
     const currentAlias = aliasMap.get(selected);
     const title = currentAlias
-      ? `给 ${selected} 起个名字（当前: ${currentAlias}):`
-      : `给 ${selected} 起个名字:`;
+      ? `Name for ${selected} (current: ${currentAlias}):`
+      : `Name for ${selected}:`;
     const newAlias = await ctx.ui.input(title);
 
     if (newAlias && newAlias.trim()) {
@@ -102,18 +100,18 @@ export async function runSummonSetup(ctx: ExtensionContext): Promise<AssistantCo
 
 export function registerSummonSetupCommand(pi: ExtensionAPI) {
   pi.registerCommand("summon-setup", {
-    description: "配置 summon 助手的模型",
+    description: "Configure models for summon assistants",
     handler: async (_args, ctx) => {
       const assistants = await runSummonSetup(ctx);
 
       if (assistants.length > 0) {
         saveConfig({ assistants });
         ctx.ui.notify(
-          `✓ 已配置 ${assistants.length} 个助手: ${assistants.map(a => a.alias).join(', ')}。请运行 /reload 生效。`,
+          `✓ Configured ${assistants.length} assistant(s): ${assistants.map(a => a.alias).join(', ')}. Run /reload to apply.`,
           "info",
         );
       } else {
-        ctx.ui.notify("未做任何更改。", "info");
+        ctx.ui.notify("No changes made.", "info");
       }
     },
   });
