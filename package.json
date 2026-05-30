@@ -1,7 +1,7 @@
 {
   "name": "pi-in-zellij",
   "version": "0.2.3",
-  "description": "Floating Editor, summon your favourite agents for help, all in zellij"
+  "description": "Floating Editor, summon your favourite agents for help, all in zellij",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sollawen/pi-in-zellij.git"
