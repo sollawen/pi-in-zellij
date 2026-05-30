@@ -1,7 +1,7 @@
 {
   "name": "pi-in-zellij",
   "version": "0.2.3",
-  "description": "Floating terminal Editor, multi-Pi agents working together, play within zellij",
+  "description": "Floating Editor, summon your favourite agents for help, all in zellij"
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sollawen/pi-in-zellij.git"
@@ -13,7 +13,9 @@
   "keywords": [
     "pi-package",
     "pi-extension",
-    "zellij"
+    "zellij",
+    "agent",
+    "editor"
   ],
   "type": "module",
   "peerDependencies": {
@@ -28,7 +30,8 @@
     "editor/",
     "CHANGELOG.md",
     "pane-comm/",
-    "lib/"
+    "lib/",
+    "pi-in-zellij.jpg"
   ],
   "pi": {
     "extensions": [
