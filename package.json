@@ -30,8 +30,7 @@
     "editor/",
     "CHANGELOG.md",
     "pane-comm/",
-    "lib/",
-    "pi-in-zellij.jpg"
+    "lib/"
   ],
   "pi": {
     "extensions": [

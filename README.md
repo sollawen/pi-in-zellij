@@ -7,7 +7,7 @@
 
 So I built this extension to bring Pi into Zellij, and things got a lot more interesting along the way.
 
-![screenshot](./pi-in-zellij.jpg)
+<img src="https://raw.githubusercontent.com/sollawen/pi-in-zellij/main/pi-in-zellij.jpg" style="width: 40%;">
 
 
 ## What can it do?
