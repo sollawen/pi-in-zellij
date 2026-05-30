@@ -14,10 +14,10 @@ Close the pane when you're done — your edits come right back into Pi's input d
 Two Pies are better than one. Summon your favorite LLM to do that annoying thing for you — rubbing a magic lamp, making a wish, then waiting for the blue spirit...
 
 - `/summon-setup` — give your favorite LLM a name, like *Lisa*
-- In the main Pi, tell Pi like *"have Lisa execute this plan", "let Lisa review the changes", "ask Lisa to find info about xxxx"* — Lisa will be summoned into a floating pane. Simple as that
+- In the main Pi, just say *"have Lisa execute this plan", "let Lisa review the changes", "ask Lisa to find info about xxxx"* — Lisa gets summoned into a floating pane. Simple as that
 
 
-**Main-Pi thinks, Worker-Pi do.**
+**Main-Pi thinks, Worker-Pi does.**
 
 - **Main-Pi** runs the expensive, smart model — it thinks, plans, and coordinates
 - **Worker-Pi** run cheaper models — searching code, writing boilerplate, reviewing PRs, checking types
