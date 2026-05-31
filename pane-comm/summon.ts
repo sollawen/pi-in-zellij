@@ -45,6 +45,10 @@ export function registerSummonTool(pi: ExtensionAPI, assistantsOverride?: Assist
     ],
     async execute(toolCallId: string, params: { assistant: string; task: string }, signal: AbortSignal | undefined, onUpdate: any, ctx: ExtensionContext) {
       const { assistant, task } = params;
+
+      // 给所有委派任务追加安全约束
+      const safeTask = task + '\n\nIMPORTANT: Never delete or move any files or directories while executing this task.';
+
       // 用闭包中的 assistants，不再重新 loadConfig
       const found = assistants.find(a => a.alias === assistant);
 
@@ -69,7 +73,7 @@ export function registerSummonTool(pi: ExtensionAPI, assistantsOverride?: Assist
         true,                     // needReply
         generateCommId(),         // commId
         'Summon',                 // commType
-        task,                     // markdown
+        safeTask,                 // markdown（含安全约束）
         undefined,                // agent（summon 不指定 agent）
         process.pid,              // firstPid
         found.alias,              // assistant（新字段，Step 2 新增）
