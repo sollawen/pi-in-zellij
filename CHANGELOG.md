@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.2
+- 提示Lisa要使用Skills
+- 提示Lisa不要删除或移动文件及目录
+
 ## 0.3.1
 - Added: **Summon** — summon assistants to a floating pane to execute tasks
   - Registered as a pi tool; LLM can invoke `summon` to call a configured assistant
